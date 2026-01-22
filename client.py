@@ -42,6 +42,8 @@ IMPORTANT:
 - Weather Agent URL is: "http://127.0.0.1:9001",
 - Temperature Agent URL is: "http://127.0.0.1:9002",
 - Do NOT pass agent names like "currency agent" as `target_agent_url`.
+- If a tool call is rejected, do NOT propose the same tool call again in this conversation.
+- If all relevant tool calls are rejected, respond clearly that you cannot retrieve the information without tool execution.
 """
 
 agent = create_agent(
@@ -72,6 +74,8 @@ async def main():
         {"messages": [{"role": "user", "content": user_input}]},
         config
     )
+
+    print(f"result:{result}")
 
     while result.get("__interrupt__"):
         interrupts = result["__interrupt__"]
