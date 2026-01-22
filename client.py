@@ -27,6 +27,7 @@ provider = A2AClientToolProvider(
     known_agent_urls=[
         "http://127.0.0.1:9000",
         "http://127.0.0.1:9001",
+        "http://127.0.0.1:9002",
     ]
 )
 
@@ -37,8 +38,9 @@ You are a team supervisor. Use A2A tools to delegate tasks.
 
 IMPORTANT:
 - When calling `a2a_send_message`, `target_agent_url` MUST be a full URL including scheme.
-- Currency Agent URL is: http://127.0.0.1:9000/
+- Currency Agent URL is: "http://127.0.0.1:9000"
 - Weather Agent URL is: "http://127.0.0.1:9001",
+- Temperature Agent URL is: "http://127.0.0.1:9002",
 - Do NOT pass agent names like "currency agent" as `target_agent_url`.
 """
 
@@ -86,34 +88,12 @@ async def main():
             d = input("このツールを承認？ (approve/reject): ").strip().lower()
             if d not in ("approve", "reject"):
                 raise ValueError("approve/reject 以外が入力されました")
-            decisions.append({"type": d, "message": f"ユーザーが{d}しました"})
+            decisions.append({"type": d, "message": f"ユーザーが{action['name']}の実行を{d}しました"})
 
         result = await agent.ainvoke(
             Command(resume={"decisions": decisions}),
             config
         )
-
-        # for interrupt in interrupts:
-        #     action_requests = interrupt.value.get("action_requests", [])
-        #     for action in action_requests:
-        #         print(f"\nツール: {action['name']}")
-        #         print(f"引数: {action['args']}")
-
-        # decision = input("\n承認しますか？ (approve/reject): ").strip().lower()
-
-        # if decision == "approve":
-        #     result = await agent.ainvoke(
-        #         Command(resume={"decisions": [{"type": "approve", "message": "ユーザーが許可しました"}]}),
-        #         config
-        #     )
-        # elif decision == "reject":
-        #     result = await agent.ainvoke(
-        #         Command(resume={"decisions": [{"type": "reject", "message": "ユーザーが拒否しました"}]}),
-        #         config
-        #     )
-        # else:
-        #     print("無効な入力です。approve または reject を入力してください。")
-        #     continue
 
     print("\n=== 応答 ===")
     print(result["messages"][-1].content)
