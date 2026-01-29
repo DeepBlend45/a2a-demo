@@ -1,10 +1,11 @@
 import asyncio
 import logging
 from langchain.agents import create_agent
-from a2a_client import A2AClientToolProvider
+from .a2a_client import A2AClientToolProvider
+
+from ..middleware.content_filter_middleware import ContentFilterMiddleware
 
 from dotenv import load_dotenv
-
 load_dotenv()
 
 
@@ -33,24 +34,38 @@ IMPORTANT:
 supervisor = create_agent(
     model="openai:gpt-4o-mini",
     tools=provider.tools,
-    system_prompt=system_prompt
+    system_prompt=system_prompt,
+    middleware=[
+        ContentFilterMiddleware(
+            banned_keywords=["hack", "exploit", "malware","東京"]
+        ),
+    ],
 )
 
-# The agent can now discover and interact with A2A servers
-# Standard usage
-
 async def main():
-    response = await supervisor.ainvoke({
-        "messages": [
-            {
-                "role": "user",
-                # "content": "今日の東京の天気は？",
-                "content": "1ドルは日本円で何円ですか？",
-            }
-        ]
-    })
-    messages = response['messages']
-    for message in messages:
-        print(message.content)
 
-asyncio.run(main())
+    while True:
+        query = input("You> ").strip()
+        if not query:
+            continue
+        if query.lower() in {"exit", "quit", "q"}:
+            break
+
+        response = await supervisor.ainvoke({
+            "messages": [
+                {
+                    "role": "user",
+                    "content": query, 
+                }
+            ]
+        })
+
+        for message in response["messages"]:
+            if getattr(message, "content", None):
+                print(f"AI> {message.content}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+# cd /Users/atsuyayamada/workspace/a2a-langgraph
+# uv run python -m no_library.supervisor_agent

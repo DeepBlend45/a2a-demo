@@ -97,3 +97,5 @@ server = A2AStarletteApplication(
 )
 
 uvicorn.run(server.build(), host=BIND_HOST, port=port)
+
+# uv run weather_agent.py

@@ -98,3 +98,5 @@ server = A2AStarletteApplication(
 )
 
 uvicorn.run(server.build(), host=BIND_HOST, port=port)
+
+# uv run currency_agent.py
