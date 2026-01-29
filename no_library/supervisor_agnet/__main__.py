@@ -44,8 +44,8 @@ async def main():
         "messages": [
             {
                 "role": "user",
-                "content": "今日の東京の天気は？",
-                # "content": "1ドルは日本円で何円ですか？",
+                # "content": "今日の東京の天気は？",
+                "content": "1ドルは日本円で何円ですか？",
             }
         ]
     })

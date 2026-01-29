@@ -58,36 +58,60 @@ class LangGraphAgentAdapter:
         print("STRUCTURED_TYPE:", type(current_state.values.get("structured_response")))
         logger.info("state keys=%s", list(current_state.values.keys()))
         logger.info("structured_response raw=%r", current_state.values.get("structured_response"))
-        structured_response = current_state.values.get('structured_response')
-        if structured_response and isinstance(
-            structured_response, ResponseFormat
-        ):
-            if structured_response.status == 'input_required':
-                return {
-                    'is_task_complete': False,
-                    'require_user_input': True,
-                    'content': structured_response.message,
-                }
-            if structured_response.status == 'error':
-                return {
-                    'is_task_complete': True,
-                    'require_user_input': False,
-                    'content': structured_response.message,
-                }
-            if structured_response.status == 'completed':
-                return {
-                    'is_task_complete': True,
-                    'require_user_input': False,
-                    'content': structured_response.message,
-                }
 
+        msgs = current_state.values.get("messages", [])
+
+        # 末尾から「contentが空じゃない」ものを拾う
+        final_text = None
+        for m in reversed(msgs):
+            content = getattr(m, "content", None)
+            if content:
+                final_text = content
+                break
+
+        if final_text:
+            return {
+                "is_task_complete": True,
+                "require_user_input": False,
+                "content": final_text,
+            }
+
+        # ToolMessageしか無い/AIMessageが空など、期待外のとき
         return {
-            'is_task_complete': True,
-            'require_user_input': False,
-            'content': (
-                'We are unable to process your request at the moment. '
-                'Please try again.'
-            ),
+            "is_task_complete": True,
+            "require_user_input": False,
+            "content": "Error: agent produced no final text.",
         }
+        # structured_response = current_state.values.get('structured_response')
+        # if structured_response and isinstance(
+        #     structured_response, ResponseFormat
+        # ):
+        #     if structured_response.status == 'input_required':
+        #         return {
+        #             'is_task_complete': False,
+        #             'require_user_input': True,
+        #             'content': structured_response.message,
+        #         }
+        #     if structured_response.status == 'error':
+        #         return {
+        #             'is_task_complete': True,
+        #             'require_user_input': False,
+        #             'content': structured_response.message,
+        #         }
+        #     if structured_response.status == 'completed':
+        #         return {
+        #             'is_task_complete': True,
+        #             'require_user_input': False,
+        #             'content': structured_response.message,
+        #         }
+
+        # return {
+        #     'is_task_complete': True,
+        #     'require_user_input': False,
+        #     'content': (
+        #         'We are unable to process your request at the moment. '
+        #         'Please try again.'
+        #     ),
+        # }
 
     SUPPORTED_CONTENT_TYPES = ['text', 'text/plain']

@@ -72,7 +72,7 @@ class LangGraphAgentExecutor(AgentExecutor):
                 else:
                     await updater.add_artifact(
                         [Part(root=TextPart(text=item['content']))],
-                        name='conversion_result',
+                        name='tool_result',
                     )
                     await updater.complete()
                     break
